@@ -177,7 +177,7 @@ analyze how an individual part is performing compared to the overall, allowing
 us to understand which category has the biggest impact on the business
 
 
-=================================
+===================================
 DATA SEGMENTATION
 =================================
 
@@ -199,10 +199,10 @@ from gold_products
 group by segments
 ```
 
---2. Group customers into three segments based on their spending behavior:
---  - VIP: Customers with at least 12 months of history and spending more than €5,000.
---  - Regular: Customers with at least 12 months of history but spending €5,000 or less.
---  - New: Customers with a lifespan less than 12 months.
+--2. Group customers into three segments based on their spending behavior:       
+--   - VIP: Customers with at least 12 months of history and spending more than €5,000.
+--   - Regular: Customers with at least 12 months of history but spending €5,000 or less.
+--   - New: Customers with a lifespan less than 12 months.
 -- And find the total number of customers by each group 
 
 ```sql
