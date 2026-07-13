@@ -71,9 +71,9 @@ select * from gold_sales
 ```
 ## Business Problems and Solutions
 
-===========================================================
--------------CHANGE-OVER-TIME ANALYSIS---------------------
-===========================================================
+===============================
+---CHANGE-OVER-TIME ANALYSIS---
+===============================
  
 --1. Analyze Sales Over Time 
 
