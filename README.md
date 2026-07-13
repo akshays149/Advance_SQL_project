@@ -97,7 +97,7 @@ group by year(order_date)
 order by year(order_date); 
 ```
 ## Objectives; 
---analyze how a measure evolves over time 
+--analyze how a measure evolves over time                  
 --helps track trends and identify seasonality in your data
 
 
