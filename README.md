@@ -72,7 +72,7 @@ select * from gold_sales
 ## Business Problems and Solutions
 
 ===============================
----CHANGE-OVER-TIME ANALYSIS---
+CHANGE-OVER-TIME ANALYSIS
 ===============================
  
 --1. Analyze Sales Over Time 
@@ -101,9 +101,9 @@ order by year(order_date);
 --helps track trends and identify seasonality in your data
 
 
-=============================================================
----------------CUMULATIVE ANALYSIS---------------------------
-=============================================================
+=================================
+CUMULATIVE ANALYSIS
+=================================
  
 --1. Calculates Total Sales Per Month and Running Total Of Sales Over Time.    {months of year sales}
 
@@ -124,9 +124,9 @@ from cte;
 --helps to understand whether our business is growing or decling
 
 
-===============================================================
------------------PERFORMANCE ANALYSIS--------------------------
-===============================================================  
+==============================
+PERFORMANCE ANALYSIS
+==============================
 
 --1. Analyze The Yearly Performance Of Products By Comparing Thier Sales To Both The Average Sales 
 -----Perfomance Of The Product And The Previous Year's Sales                 {year-over-year}
@@ -152,9 +152,9 @@ from cte
 **Objective: comparing the current value to target value
 
 
-=====================================================================
------------------------PART-TO-WHOLE ANALYSIS------------------------
-=====================================================================
+===================================
+PART-TO-WHOLE ANALYSIS
+===================================
  
 --1. Which Categories Contribute The Most To Overall Sales        {BY Percentage}
 
@@ -177,9 +177,9 @@ analyze how an individual part is performing compared to the overall, allowing
 us to understand which category has the biggest impact on the business
 
 
-=====================================================================
---------------------DATA SEGMENTATION--------------------------------
-=====================================================================
+=================================
+DATA SEGMENTATION
+=================================
 
 --1. Segment Products Into Cost Ranges and 
     How Many Products Fall Into Each Segment
@@ -239,9 +239,9 @@ helps to understand the correlation between two measures
 ========================================================================================================
 **REPORTS**
 
-===============================================================================
----------------------**Customer Report**---------------------------------------
-===============================================================================
+============================
+**Customer Report**
+============================
 Purpose:
     - This report consolidates key customer metrics and behaviors
 
