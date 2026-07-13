@@ -1,254 +1,371 @@
-# Netflix Movies and TV Shows Data Analysis using SQL
+# Advance_sql_data-analytics_project
 
-<img width="2226" height="678" alt="logo" src="https://github.com/user-attachments/assets/010821a7-f988-48c2-a092-f21e3c1facf6" />
+<img width="2492" height="1696" alt="Gemini_Generated_Image_jqqs26jqqs26jqqs" src="https://github.com/user-attachments/assets/ee2d0f8f-adb8-4374-9df5-dff1ed48a1b1" />
 
 
 ## Overview
-This project involves a comprehensive analysis of Netflix's movies and TV shows data using SQL. The goal is to extract valuable insights and answer various business questions based on the dataset. The following README provides a detailed account of the project's objectives, business problems, solutions, findings, and conclusions.
+A comprehensive collection of SQL scripts for data exploration, analytics, and reporting. These scripts cover various analyses such as database exploration, measures and metrics, time-based trends, cumulative analytics, segmentation, and more. This repository contains SQL queries designed to help data analysts and BI professionals quickly explore, segment, and analyze data within a relational database. Each script focuses on a specific analytical theme and demonstrates best practices for SQL queries.
 
 ## Objectives
 
-- Analyze the distribution of content types (movies vs TV shows).
-- Identify the most common ratings for movies and TV shows.
-- List and analyze content based on release years, countries, and durations.
-- Explore and categorize content based on specific criteria and keywords.
+## Objective
+
+The objective of this project is to implement and master advanced analytical workflows within data management systems, focusing on six core pillars of data analytics:
+
+1. Change-Over-Time Analysis: Tracking and modeling historical trends, patterns, and chronological data shifts over time.
+2. Cumulative Analysis: Implementing aggregate running calculations, moving boundaries, and cumulative metrics across data      sets.
+3. Performance Analysis: Evaluating key metric behaviors, variances, and performance indicator efficiencies against target      benchmarks.
+4. Part-to-Whole (Proportional) Analysis: Breaking down structural compositions and relative proportional contributions of      individual components to the whole.
+5. Data Segmentation: Clustering and partitioning complex datasets into distinct, meaningful groups based on behavioral or      demographic traits.
+6. Reporting: Designing clean, structured query architectures to transform raw transactional data into actionable               operational reports.
 
 ## Dataset
 
-The data for this project is sourced from the Kaggle dataset:
-
-- **Dataset Link:** [Movies Dataset](https://www.kaggle.com/datasets/shivamb/netflix-shows?resource=download)
 
 ## Schema
 
 ```sql
-DROP TABLE IF EXISTS netflix;
-CREATE TABLE netflix
-(
-	show_id	VARCHAR(max),
-	type    VARCHAR(max),
-	title	VARCHAR(max),
-	director VARCHAR(max),
-	casts	VARCHAR(max),
-	country	VARCHAR(max),
-	date_added	date,
-	release_year	INT,
-	rating	VARCHAR(255),
-	duration	VARCHAR(255),
-	listed_in	VARCHAR(255),
-	description VARCHAR(max)
+--creating a database for project by name 'datawarehouse'
+create database Data_warehouse
+
+--creating tables/schemas
+CREATE TABLE gold_customers(
+	customer_key int,
+	customer_id int,
+	customer_number varchar(50),
+	first_name varchar(50),
+	last_name varchar(50),
+	country varchar(50),
+	marital_status varchar(50),
+	gender varchar(50),
+	birthdate date,
+	create_date date
 );
-```
-``imported data directly with wizard 
-```sql
-select * from netflix;
+
+CREATE TABLE gold_products(
+	product_key int ,
+	product_id int ,
+	product_number varchar(50) ,
+	product_name varchar(50) ,
+	category_id varchar(50) ,
+	category varchar(50) ,
+	subcategory varchar(50) ,
+	maintenance varchar(50) ,
+	cost int,
+	product_line varchar(50),
+	start_date date 
+);
+
+CREATE TABLE gold_sales(
+	order_number varchar(50),
+	product_key int,
+	customer_key int,
+	order_date date,
+	shipping_date date,
+	due_date date,
+	sales_amount int,
+	quantity int,
+	price int 
+);
+
+--Importing data from wizard feature into the tables
+select * from gold_customers
+select * from gold_products
+select * from gold_sales
 ```
 ## Business Problems and Solutions
 
-### 1. Count the Number of Movies vs TV Shows
+===========================================================
+-------------CHANGE-OVER-TIME ANALYSIS---------------------
+===========================================================
+ 
+--1. Analyze Sales Over Time 
 
 ```sql
-select type, count(*) as total_count from netflix
-group by type;
+--BY days
+select order_date, sum(sales_amount) as sales_overtime, sum(quantity) as quantity from gold_sales
+where order_date is not null
+group by order_date																					
+order by order_date; 
+
+--BY MONTHS
+select MONTH(order_date) AS ORDER_BY_MONTHS, sum(sales_amount) as sales_overtime, sum(quantity) as quantity from gold_sales
+where order_date is not null
+group by MONTH(order_date)																					
+order by MONTH(order_date); 
+
+--BY YEARS
+select year(order_date) AS ORDER_BY_year, sum(sales_amount) as sales_overtime, sum(quantity) as quantity from gold_sales
+where order_date is not null
+group by year(order_date)																					
+order by year(order_date); 
 ```
+## Objectives; 
+--analyze how a measure evolves over time 
+--helps track trends and identify seasonality in your data
 
-**Objective:** Determine the distribution of content types on Netflix.
 
-### 2. Find the Most Common Rating for Movies and TV Shows
+=============================================================
+---------------CUMULATIVE ANALYSIS---------------------------
+=============================================================
+ 
+--1. Calculates Total Sales Per Month and Running Total Of Sales Over Time.    {months of year sales}
 
 ```sql
-select 
-type,rating from
-		(select rating, type, count(type) as common_rating, 
-		rank() over (partition by type order by count(type)desc ) as max_rate
-		from netflix 
-		group by rating,type) as t1
-where max_rate =1;
+with cte as(			
+			select DATEFROMPARTS(year(order_date),MONTH(order_date),1) as month_wise, sum(sales_amount) as month_sales 
+			from gold_sales
+			where order_date is not null
+			group by DATEFROMPARTS(year(order_date),MONTH(order_date),1)
+			) 
+
+select month_wise, month_sales, 
+sum(month_sales) over ( order by month_wise) as running_total 
+from cte;
 ```
+## Objectives;
+--aggregate the data progressivly over time 
+--helps to understand whether our business is growing or decling
 
-**Objective:** Identify the most frequently occurring rating for each type of content.
 
-### 3. List All Movies Released in a Specific Year (e.g., 2020)
+===============================================================
+-----------------PERFORMANCE ANALYSIS--------------------------
+===============================================================  
+
+--1. Analyze The Yearly Performance Of Products By Comparing Thier Sales To Both The Average Sales 
+-----Perfomance Of The Product And The Previous Year's Sales                 {year-over-year}
 
 ```sql
-select title, type, release_year  from netflix
-where release_year = 2020
+with cte as (select year(order_date) as years, gold_sales.product_key,  gold_products.product_name, 
+sum(sales_amount) as current_sales
+from gold_sales
+
+left join gold_products
+on gold_sales.product_key = gold_products.product_key
+
+where order_date is not null
+group by year(order_date),gold_sales.product_key,gold_products.product_name
+)
+
+select years,product_key,product_name,current_sales,
+avg(current_sales) over (partition by product_name) as avg_sales,
+lag(current_sales) over (partition by product_name order by years) as previous_yr_sales
+from cte
 ```
 
-**Objective:** Retrieve all movies released in a specific year.
+**Objective: comparing the current value to target value
 
-### 4. Find the Top 5 Countries with the Most Content on Netflix
+
+=====================================================================
+-----------------------PART-TO-WHOLE ANALYSIS------------------------
+=====================================================================
+ 
+--1. Which Categories Contribute The Most To Overall Sales        {BY Percentage}
 
 ```sql
-select top 5 c_rank, count(show_id) as top_shows from
-		(select show_id, value as c_rank from netflix
-		cross apply   string_split(country,',')) as t2
-group by c_rank
-order by top_shows desc;
+with cte as (
+			select category, sum(gold_sales.sales_amount) as sales from gold_sales
+			left join gold_products
+			on gold_sales.product_key = gold_products.product_key
+			group by category
+			)
+
+select category, sales, 
+concat(round(cast(sales as float)/(select sum(sales_amount)from gold_sales)*100,2),'%') as category_perct
+from cte
+
 ```
 
-**Objective:** Identify the top 5 countries with the highest number of content items.
+**Objective:
+analyze how an individual part is performing compared to the overall, allowing 
+us to understand which category has the biggest impact on the business
 
-### 5. Identify the Longest Movie
+
+=====================================================================
+--------------------DATA SEGMENTATION--------------------------------
+=====================================================================
+
+--1. Segment Products Into Cost Ranges and 
+    How Many Products Fall Into Each Segment
 
 ```sql
-with cte as (select title,type, duration, 
-			cast(REPLACE(duration,' min',0)as int ) as new_duration from netflix
-			where type = 'movie')
-
-select * from cte
-where new_duration = (select max(cast(replace(duration,' min',0)as int )) from netflix
-					  where type ='movie');
+select segments, count(product_name) as fall
+from (
+select product_key, product_name, cost,
+		CASE 
+			when cost < 100                then 'Below 100'
+			when cost between 100 and 500  then '100-500'
+			when cost between 500 and 1000 then '500-1000'
+			else 'Above 1000'
+		END as segments
+from gold_products
+     ) as t1
+group by segments
 ```
 
-**Objective:** Find the movie with the longest duration.
-
-### 6. Find Content Added in the Last 5 Years
+--2. Group customers into three segments based on their spending behavior:
+--  - VIP: Customers with at least 12 months of history and spending more than €5,000.
+--  - Regular: Customers with at least 12 months of history but spending €5,000 or less.
+--  - New: Customers with a lifespan less than 12 months.
+-- And find the total number of customers by each group 
 
 ```sql
-with cte as (select show_id, title, type, 
-			 datediff(year,date_added,getdate()) as last_5yrs 
-			 from netflix)
+with cte as (	
+			select c.customer_key, sum(s.sales_amount) as sales,  
+			max(s.order_date)as last_order, 
+			min(s.order_date)as first_order,
+			DATEDIFF(month,min(s.order_date) ,max(s.order_date)) as span
+			from gold_customers c
+			left join gold_sales s
+			on c.customer_key = s.customer_key
+			group by c.customer_key
+			)
 
-select * from cte
-where last_5yrs between 0 and 5;
+select  count(customer_key),
+	CASE 
+		when span >=12 and sales >5000              then 'VIP'
+		when span >=12 and sales between 0 and 5000 then 'REGULAR'
+		else 'new'
+	END as rating 
+from cte
+group by CASE 
+		when span >=12 and sales >5000              then 'VIP'
+		when span >=12 and sales between 0 and 5000 then 'REGULAR'
+		else 'new'
+	END 
 ```
 
-**Objective:** Retrieve content added to Netflix in the last 5 years.
+**Objectives:
+group the data based on specific range 
+helps to understand the correlation between two measures 
 
-### 7. Find All Movies/TV Shows by Director 'Rajiv Chilaka'
+
+========================================================================================================
+**REPORTS**
+
+===============================================================================
+---------------------**Customer Report**---------------------------------------
+===============================================================================
+Purpose:
+    - This report consolidates key customer metrics and behaviors
+
+Highlights:
+    1. Gathers essential fields such as names, ages, and transaction details.
+	2. Segments customers into categories (VIP, Regular, New) and age groups.
+    3. Aggregates customer-level metrics:
+	   - total orders
+	   - total sales
+	   - total quantity purchased
+	   - total products
+	   - lifespan (in months)
+    4. Calculates valuable KPIs:
+	    - recency (months since last order)
+		- average order value
+		- average monthly spend
+===============================================================================
+
+-- =============================================================================
+-- Create Report: gold_report_customers
+-- =============================================================================
 
 ```sql
-with cte as (select show_id, type,title,value as indi_directors from netflix
-			 cross apply string_split(director,','))
+CREATE VIEW gold_report_customers AS
 
-select * from cte 
-where indi_directors ='rajiv chilaka';
+WITH base_query AS(
+---------------------------------------------------------------------------
+--1) Base Query: Retrieves core columns from tables
+---------------------------------------------------------------------------
+SELECT
+f.order_number,
+f.product_key,
+f.order_date,
+f.sales_amount,
+f.quantity,
+c.customer_key,
+c.customer_number,
+CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
+DATEDIFF(year, c.birthdate, GETDATE()) age
+FROM gold_sales f
+LEFT JOIN gold_customers c
+ON c.customer_key = f.customer_key
+WHERE order_date IS NOT NULL)
 
---second way of doing this 
-
-select * from netflix
-where director like'%Rajiv chilaka%';
+, customer_aggregation AS (
+---------------------------------------------------------------------------
+--2) Customer Aggregations: Summarizes key metrics at the customer level
+---------------------------------------------------------------------------
+SELECT 
+	customer_key,
+	customer_number,
+	customer_name,
+	age,
+	COUNT(DISTINCT order_number) AS total_orders,
+	SUM(sales_amount) AS total_sales,
+	SUM(quantity) AS total_quantity,
+	COUNT(DISTINCT product_key) AS total_products,
+	MAX(order_date) AS last_order_date,
+	DATEDIFF(month, MIN(order_date), MAX(order_date)) AS lifespan
+FROM base_query
+GROUP BY 
+	customer_key,
+	customer_number,
+	customer_name,
+	age
+)
+SELECT
+customer_key,
+customer_number,
+customer_name,
+age,
+CASE 
+	 WHEN age < 20 THEN 'Under 20'
+	 WHEN age between 20 and 29 THEN '20-29'
+	 WHEN age between 30 and 39 THEN '30-39'
+	 WHEN age between 40 and 49 THEN '40-49'
+	 ELSE '50 and above'
+END AS age_group,
+CASE 
+    WHEN lifespan >= 12 AND total_sales > 5000 THEN 'VIP'
+    WHEN lifespan >= 12 AND total_sales <= 5000 THEN 'Regular'
+    ELSE 'New'
+END AS customer_segment,
+last_order_date,
+DATEDIFF(month, last_order_date, GETDATE()) AS recency,
+total_orders,
+total_sales,
+total_quantity,
+total_products
+lifespan,
+-- Compuate average order value (AVO)
+CASE WHEN total_sales = 0 THEN 0
+	 ELSE total_sales / total_orders
+END AS avg_order_value,
+-- Compuate average monthly spend
+CASE WHEN lifespan = 0 THEN total_sales
+     ELSE total_sales / lifespan
+END AS avg_monthly_spend
+FROM customer_aggregation
 ```
 
-**Objective:** List all content directed by 'Rajiv Chilaka'.
 
-### 8. List All TV Shows with More Than 5 Seasons
+## Key Findings
 
-```sql
- with cte as (select show_id, type,  title, 
-			  try_cast(replace(replace(duration,' season',''),'s','')as int) as seasons from netflix
-			  where type = 'tv show')
+Across the analytical workflows, the following insights were uncovered:
 
-select * from cte
-where seasons > 5;
-```
+* **Trend Shifts (Change-Over-Time)**: Long-term data distributions reveal clear cyclical patterns and seasonal shifts, which are critical for accurate forecasting and proactive planning.
+* **Growth Dynamics (Cumulative Analysis)**: Running totals and cumulative aggregates effectively pinpoint major inflection points, highlighting exactly when growth velocity accelerated or stabilized.
+* **Performance Benchmarks (Performance Analysis)**: Evaluating core key performance indicators (KPIs) exposed distinct operational variances, making it easy to identify which segments consistently hit targets versus those falling behind.
+* **Composition Breakdown (Part-to-Whole)**: Proportional analysis isolated the primary drivers of total volume, proving that a concentrated minority of categories holds a dominant share of the overall metrics.
+* **Behavioral Cohorts (Data Segmentation)**: Partitioning the dataset surfaced unique user groups with highly contrasting characteristics, confirming that generic strategies are less effective than targeted, group-specific approaches.
+* **Reporting Efficiency (Reporting)**: Transforming raw transactional data into structured, optimized tables significantly reduced query latency, ensuring operational reports load quickly for stakeholder decision-making.
 
-**Objective:** Identify TV shows with more than 5 seasons.
+---
 
-### 9. Count the Number of Content Items in Each Genre
+## Conclusions
 
-```sql
-select count(show_id) as count_content, value as genre from netflix
-cross apply string_split(listed_in,',')
-group by value;
-```
+This project demonstrates the practical application of end-to-end data analytics to solve complex business problems. By moving beyond basic descriptive reporting into advanced workflows—such as cumulative windows, demographic segmentation, and trend modeling—we unlock deeper, more actionable intelligence. 
 
-**Objective:** Count the number of content items in each genre.
-
-### 10.Find each year and the average numbers of content release in India on netflix. 
-return top 5 year with highest avg content release!
-
-```sql
-with content_counts as (select release_year, count(show_id) as total_release from netflix
-						cross apply string_split(country, ',')
-						where trim(value) = 'india'
-						group by release_year)
-select top 5 
-    release_year, 
-    total_release,
-    (select avg(cast(total_release as float)) from content_counts) as avg_release
-from content_counts
-order by total_release desc;
-```
-
-**Objective:** Calculate and rank years by the average number of content releases by India.
-
-### 11. List All Movies that are Documentaries
-
-```sql
-select title, type, value as genre from netflix
-cross apply string_split(listed_in,',')
-where type = 'movie'
-and value = 'documentaries';
-
---another way 
-
-select * from netflix
-where listed_in like '%documentaries%'
-and type ='movie';
-```
-
-**Objective:** Retrieve all movies classified as documentaries.
-
-### 12. Find All Content Without a Director
-
-```sql
-select title, type , director from netflix
-where director is null;
-```
-
-**Objective:** List content that does not have a director.
-
-### 13. Find How Many Movies Actor 'Salman Khan' Appeared in the Last 10 Years
-
-```sql
-select count(title) as no_movies , release_year, year(getdate())-release_year from netflix
-where cast like '%salman khan%'
-and type = 'movie'
-group by release_year
-having   year(getdate())-release_year <= 10;
-```
-
-**Objective:** Count the number of movies featuring 'Salman Khan' in the last 10 years.
-
-### 14. Find the Top 10 Actors Who Have Appeared in the Highest Number of Movies Produced in India
-
-```sql
-select top 10 count(title) as no_work, type,  country,  value as actors 
-from netflix
-cross apply string_split(cast,',')
-where country like 'india'
-and type = 'movie'
-group by value,type,country
-order by no_work desc;
-```
-
-**Objective:** Identify the top 10 actors with the most appearances in Indian-produced movies.
-
-### 15. Categorize Content Based on the Presence of 'Kill' and 'Violence' Keywords
-
-```sql
-select count(title), 
-	CASE
-		when description like '%kill%'		then 'Bad'
-		when description like '%violence%'  then 'Bad'
-		else 'Good'
-		END as categorize
-from netflix
-group by 	case	when description like '%kill%'		then 'Bad'
-		when description like '%violence%'  then 'Bad'
-		else 'Good'
-		END; 
-```
-
-**Objective:** Categorize content as 'Bad' if it contains 'kill' or 'violence' and 'Good' otherwise. Count the number of items in each category.
-
-## Findings and Conclusion
-
-- **Content Distribution:** The dataset contains a diverse range of movies and TV shows with varying ratings and genres.
-- **Common Ratings:** Insights into the most common ratings provide an understanding of the content's target audience.
-- **Geographical Insights:** The top countries and the average content releases by India highlight regional content distribution.
+Ultimately, these findings show that data-driven decision-making relies on structured data modeling and precise segmentation. The frameworks established here provide a scalable blueprint for building optimized analytics pipelines that turn messy, raw data into clear, strategic advantages.distribution.
 - **Content Categorization:** Categorizing content based on specific keywords helps in understanding the nature of content available on Netflix.
 
 This analysis provides a comprehensive view of Netflix's content and can help inform content strategy and decision-making.
