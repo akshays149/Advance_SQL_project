@@ -8,8 +8,6 @@ A comprehensive collection of SQL scripts for data exploration, analytics, and r
 
 ## Objectives
 
-## Objective
-
 The objective of this project is to implement and master advanced analytical workflows within data management systems, focusing on six core pillars of data analytics:
 
 1. Change-Over-Time Analysis: Tracking and modeling historical trends, patterns, and chronological data shifts over time.
@@ -18,8 +16,6 @@ The objective of this project is to implement and master advanced analytical wor
 4. Part-to-Whole (Proportional) Analysis: Breaking down structural compositions and relative proportional contributions of      individual components to the whole.
 5. Data Segmentation: Clustering and partitioning complex datasets into distinct, meaningful groups based on behavioral or      demographic traits.
 6. Reporting: Designing clean, structured query architectures to transform raw transactional data into actionable               operational reports.
-
-## Dataset
 
 
 ## Schema
