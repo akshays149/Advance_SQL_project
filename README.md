@@ -236,10 +236,10 @@ group the data based on specific range
 helps to understand the correlation between two measures 
 
 
-=======================================
+=============================================    
 **REPORTS**
 
-============================
+=================================
 **Customer Report**
 ============================
 Purpose:
