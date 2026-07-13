@@ -71,7 +71,7 @@ select * from gold_sales
 ```
 ## Business Problems and Solutions
 
-===============================
+==================================
 CHANGE-OVER-TIME ANALYSIS
 ===============================
  
@@ -236,7 +236,7 @@ group the data based on specific range
 helps to understand the correlation between two measures 
 
 
-========================================================================================================
+==============================
 **REPORTS**
 
 ============================
@@ -356,16 +356,3 @@ Across the analytical workflows, the following insights were uncovered:
 * **Reporting Efficiency (Reporting)**: Transforming raw transactional data into structured, optimized tables significantly reduced query latency, ensuring operational reports load quickly for stakeholder decision-making.
 
 ---
-
-## Conclusions
-
-This project demonstrates the practical application of end-to-end data analytics to solve complex business problems. By moving beyond basic descriptive reporting into advanced workflows—such as cumulative windows, demographic segmentation, and trend modeling—we unlock deeper, more actionable intelligence. 
-
-Ultimately, these findings show that data-driven decision-making relies on structured data modeling and precise segmentation. The frameworks established here provide a scalable blueprint for building optimized analytics pipelines that turn messy, raw data into clear, strategic advantages.distribution.
-- **Content Categorization:** Categorizing content based on specific keywords helps in understanding the nature of content available on Netflix.
-
-This analysis provides a comprehensive view of Netflix's content and can help inform content strategy and decision-making.
-
-
-
-
